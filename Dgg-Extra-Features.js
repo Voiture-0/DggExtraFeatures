@@ -1,13 +1,12 @@
 // ==UserScript==
 // @name         D.GG Extra Features
 // @namespace    http://tampermonkey.net/
-// @version      2.0.0
+// @version      2.1.0
 // @description  Adds features to the destiny.gg chat
 // @author       Voiture
 // @include      /https:\/\/www\.destiny\.gg\/embed\/chat.*/
 // @include      /https:\/\/www\.destiny\.gg\/bigscreen.*/
 // @grant        none
-// @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @update       https://raw.githubusercontent.com/Voiture-0/DggExtraFeatures/master/Dgg-Extra-Features.js
 // ==/UserScript==
 
@@ -21,7 +20,7 @@
     // Load Config Settings
     const config = {
         username: null,
-        messageStartingLeft: 83.72917175292969,
+        messageStartingLeft: 79.09375,//83.72917175292969,
         messageStartingLeftNewLine: 19,
         autoSendMessages: false,
         clickableEmotes: true,
@@ -35,7 +34,7 @@
         '.': 3.42,
         nathanTiny2_OG: 28,
         space: 3.22,
-        '👞👞':  35.7,//40, // '👢👢': 33,
+        '👞👞':  35.7,
     };
 
     const emoteCenterOffsets = {
@@ -85,31 +84,22 @@
         current: 0,
     };
 
-    const LEFT_CLICK = 1,
-        MIDDLE_CLICK = 2;
+    const LEFT_CLICK = 0;
+    const MIDDLE_CLICK = 1;
 
     let mentionsWindow = null;
     let chatHidden = false;
     const TURKEY_EMOTE = 'PepoTurkey';
-    let goblIcon = (testIfEmoteExists(TURKEY_EMOTE) ? TURKEY_EMOTE : '🦃');
+    const goblIcon = (testIfEmoteExists(TURKEY_EMOTE) ? TURKEY_EMOTE : '🦃');
 
     /******************************************/
     /* Utility Functions **********************/
     /******************************************/
 
-    // Get N-th parent element
-    jQuery.fn.getParent = function (num) {
-        let last = this[0];
-        for (let i = 0; i < num; i++) {
-            last = last.parentNode;
-        }
-        return jQuery(last);
-    };
-
     // Send chat message
     function sendChatMessage(message, forceSend = false) {
-        const chatBox = $('#chat-input-control');
-        chatBox.val(message);
+        const chatBox = document.getElementById('chat-input-control');
+        chatBox.value = message;
         if (config.autoSendMessages || forceSend) {
             simulateEnterKeyPress(chatBox);
         }
@@ -117,8 +107,8 @@
 
     // Append chat message
     function setChatMessage(message, forceSend = false) {
-        const chatBox = $('#chat-input-control');
-        chatBox.val(message);
+        const chatBox = document.getElementById('chat-input-control');
+        chatBox.value = message;
         if (forceSend) {
             simulateEnterKeyPress(chatBox);
         }
@@ -126,14 +116,14 @@
 
     // Triggers an enter key press on an element
     function simulateEnterKeyPress(elem) {
-        elem[0].dispatchEvent(
+        elem.dispatchEvent(
             new KeyboardEvent('keypress', { key: 'Enter', keyCode: 13 }),
         );
     }
 
     // Checks if a user is mentioned in a message
     function messageMentionsUsername(message, username) {
-        const mentions = message.data('mentioned');
+        const mentions = message.dataset.mentioned;
         return (
             mentions !== undefined &&
             mentions.split(' ').includes(username.toLowerCase())
@@ -163,28 +153,22 @@
 
     // paste a string at the cursor's position in the chat box
     function addToChatBox(str, autoSendMessage) {
-        const selectionStart = $('#chat-input-control')[0].selectionStart;
-        const selectionEnd = $('#chat-input-control')[0].selectionEnd;
-        const messageStart = $('#chat-input-control')
-            .val()
+        const selectionStart = document.getElementById('chat-input-control').selectionStart;
+        const selectionEnd = document.getElementById('chat-input-control').selectionEnd;
+        const messageStart = document.getElementById('chat-input-control')
+            .value
             .substr(0, selectionStart);
-        const messageEnd = $('#chat-input-control').val().substr(selectionEnd);
+        const messageEnd = document.getElementById('chat-input-control').value.substr(selectionEnd);
         const message = `${messageStart.trimEnd()} ${str.trim()} ${messageEnd.trimStart()}`;
         setChatMessage(message, autoSendMessage);
         if (!autoSendMessage) {
             // Reset cursor position
-            $('#chat-input-control')[0].focus();
+            document.getElementById('chat-input-control').focus();
             const cursorPosition = `${messageStart} ${str} `.length;
-            $('#chat-input-control')[0].selectionStart = cursorPosition;
-            $('#chat-input-control')[0].selectionEnd = cursorPosition;
+            document.getElementById('chat-input-control').selectionStart = cursorPosition;
+            document.getElementById('chat-input-control').selectionEnd = cursorPosition;
         }
     }
-
-    // Case Insensitive contains jQuery selector
-    jQuery.expr[':'].icontains = function(a, i, m) {
-        return jQuery(a).text().toUpperCase()
-            .indexOf(m[3].toUpperCase()) >= 0;
-    };
 
     function testIfEmoteExists(emote) {
         // if(emote === undefined || emote === null || typeof emote !== 'string') return false;
@@ -446,12 +430,12 @@
         }
 
         // Remove all themes
-        $('#chat').removeClass('voiture-light-theme');
+        document.getElementById('chat').classList.remove('voiture-light-theme');
 
         // Add selected theme class
         switch(config.theme) {
             case 'light':
-                $('#chat').addClass('voiture-light-theme');
+                document.getElementById('chat').classList.add('voiture-light-theme');
                 break;
         }
     }
@@ -460,16 +444,21 @@
     /* Emote Back *****************************/
     /******************************************/
 
-    function clearEmoteBackButton() {
+    function clearEmoteBackButton(resetPointer = true) {
         // Remove click event
-        $('#chat-emote-back-btn').off('click').attr('title', '');
+        const oldBtn = document.getElementById('chat-emote-back-btn');
+        const btn = oldBtn.cloneNode(true); // Easiest way to remove old event listener
+        btn.setAttribute('title', '');
+        oldBtn.parentNode.replaceChild(btn, oldBtn);
+        
         // Remove classes to hide it
-        $('#chat-emote-back-btn .emote.voiture-btn-icon')
-            .removeClass()
-            .addClass('emote voiture-btn-icon');
+        var emoteBackBtnEmote = btn.querySelector('.emote.voiture-btn-icon');
+        emoteBackBtnEmote.className = 'emote voiture-btn-icon';
+
+        addEmoteBackListeners();
 
         // reset emote back log index
-        emoteBackLog.current = -1;
+        if (resetPointer) emoteBackLog.current = -1;
     }
 
     function emoteBack(user, emote) {
@@ -490,12 +479,11 @@
     }
 
     function setEmoteBackButton(emoteMention) {
-        $('#chat-emote-back-btn')
-            .attr('title', `${emoteMention.mentionedBy} ${emoteMention.emoteName}`)
-            .off('click')
-            .click((e) => emoteBack(emoteMention.mentionedBy, emoteMention.emoteName))
-            .find('.emote-scaling-wrapper')
-            .html(`<i class="voiture-btn-icon emote ${emoteMention.emoteName}"></i>`);
+        clearEmoteBackButton(false);
+        const btn = document.getElementById('chat-emote-back-btn');
+        btn.setAttribute('title', `${emoteMention.mentionedBy} ${emoteMention.emoteName}`);
+        btn.addEventListener('click', e => emoteBack(emoteMention.mentionedBy, emoteMention.emoteName));
+        btn.querySelector('.emote-scaling-wrapper').innerHTML = `<i class="voiture-btn-icon emote ${emoteMention.emoteName}"></i>`;
     }
 
     function saveEmoteMention(mentionedBy, emoteName) {
@@ -529,49 +517,49 @@
 
     // Look for messages where we have been emoted at
     function observeChat() {
-        var emotedAtObserveFunction = function (mutations) {
+        const emotedAtObserveFunction = function (mutations) {
             for (let i = 0; i < mutations.length; i++) {
                 for (let j = 0; j < mutations[i].addedNodes.length; j++) {
                     // Get new message
-                    const message = $(mutations[i].addedNodes[j]);
+                    const message = mutations[i].addedNodes[j];
 
                     // Skip own messages
-                    if (message.hasClass('msg-own')) continue;
+                    if (message.classList.contains('msg-own')) continue;
                     // Skip non-mentions
-                    if (!messageMentionsUsername(message, config.username))
-                        continue;
+                    if (!messageMentionsUsername(message, config.username)) continue;
 
-                    // Check if emoted at
-                    const emote = message.find(
-                        `.text .chat-user:icontains('${config.username}') + .emote`,    // This is supposed to be case insensitive, but seems to not work sometimes hmmm TODO: this
-                    ); // Only if the message us Username Emote (+), if want to get any emote after Username use '~' instead of '+'
+                    const messageText = message.querySelector('.text');
+                    if (!messageText.innerText.toLowerCase().includes(config.username.toLowerCase())) continue; // TODO: change to look at .chat-user elements?
+                    const usersOrEmotes = messageText.querySelectorAll('.chat-user, .emote');
+                    let emoteName = null;
+                    let lookingForNextEmote = false;
+                    for (const elem of usersOrEmotes) {
+                        if (!lookingForNextEmote && elem.innerText.toLowerCase() === config.username.toLowerCase()) {
+                            lookingForNextEmote = true;
+                        } else if (lookingForNextEmote && elem.classList.contains('emote')) {
+                            emoteName = elem.innerText;
+                            break;
+                        }
+                    }
                     // If we were emoted at
-                    if (emote.length !== 0) {
+                    if (emoteName != null) {
                         // Get emoter
-                        const mentionedBy = message.find('a.user').text();
-                        // Get emote
-                        const emoteName = emote
-                            .filter(':last') // Maybe want to get first instead?
-                            .attr('class')
-                            .replace('emote', '')
-                            .trim();
-
+                        const mentionedBy = message.querySelector('a.user').innerText;
                         // save mention
                         saveEmoteMention(mentionedBy, emoteName);
                     }
+
                 }
             }
         };
 
         // Look at chat for any embed links (ex: #twitch/destiny)
-        var convertLinksObserveFunction = function (mutations) {
+        const convertLinksObserveFunction = function (mutations) {
             if (config.convertEmbedLinks) {
-                for (let mutation of mutations) {
-                    for (let message of mutation.addedNodes) {
-                        let links = $(message).find(
-                            'a.externallink.bookmarklink',
-                        );
-                        for (let link of links) {
+                for (const mutation of mutations) {
+                    for (const message of mutation.addedNodes) {
+                        const links = message.querySelectorAll('a.externallink.bookmarklink');
+                        for (const link of links) {
                             convertEmbedLinkToExternalLink(link);
                         }
                     }
@@ -580,17 +568,13 @@
         };
 
 		// Look at chat for any twitter links to fix (remove ?s=21)
-        var convertTwitterLinksObserveFunction = function (mutations) {
+        const convertTwitterLinksObserveFunction = function (mutations) {
 			const twitterRegex = /((http|https):\/\/)?((www|mobile)\.)?(twitter\.com\/)(.+)(\?s=\d+)?/;
-			for (let mutation of mutations) {
-				for (let message of mutation.addedNodes) {
-					let links = $(message).find(
-						'a.externallink',
-					);
-					for (let link of links) {
-						if(twitterRegex.test(link.href)) {
-							fixTwitterLinks(link);
-						}
+			for (const mutation of mutations) {
+				for (const message of mutation.addedNodes) {
+					const links = message.querySelectorAll('a.externallink');
+					for (const link of links) {
+						if (twitterRegex.test(link.href)) fixTwitterLinks(link);
 					}
 				}
 			}
@@ -601,7 +585,7 @@
         const linkObserver = new MutationObserver(convertLinksObserveFunction);
         const twitterLinkObserver = new MutationObserver(convertTwitterLinksObserveFunction);
 
-        const chat = $('#chat-win-main .chat-lines')[0];
+        const chat = document.querySelector('#chat-win-main .chat-lines');
 
         // Observe chat
         emotedAtObserver.observe(chat, {
@@ -627,8 +611,8 @@
 
     function getOwnStartingLeft(username) {
         const exampleMessageSelector = `div.msg-chat.msg-user.msg-own:not(.msg-continue)[data-username='${username.toLowerCase()}'] > span.text`;
-        let exampleMessage = $(exampleMessageSelector);
-        if (exampleMessage.length === 0) {
+        let exampleMessage = exampleMessageSelector;
+        if (exampleMessage == null) {
             // If there is no message to measure, send a message to measure
             // Send message
             if (['Voiture', 'AFrenchCar'].includes(config.username)) {
@@ -638,16 +622,15 @@
             }
 
             // Get example message
-            exampleMessage = $(exampleMessageSelector);
+            exampleMessage = exampleMessageSelector;
 
-            if (exampleMessage.length === 0) {
+            if (exampleMessage == null) {
                 const error = 'Unable to measure, please tell Voiture about this';
                 alert(error);
                 throw error;
             }
         }
-        const left = exampleMessage.position().left;
-        return left;
+        return exampleMessage.getBoundingClientRect().left;
     }
 
     function measureRecentMessageDiffLeft(emote) {
@@ -703,11 +686,11 @@
             saveConfig();
         }
         if (config.showVerticalComboButtons) {
-            $('#chat-nathanTiny2-btn').removeClass('hidden');
-            $('#chat-👞👞-btn').removeClass('hidden');
+            document.getElementById('chat-nathanTiny2-btn').classList.remove('hidden');
+            document.getElementById('chat-👞👞-btn').classList.remove('hidden');
         } else {
-            $('#chat-nathanTiny2-btn').addClass('hidden');
-            $('#chat-👞👞-btn').addClass('hidden');
+            document.getElementById('chat-nathanTiny2-btn').classList.add('hidden');
+            document.getElementById('chat-👞👞-btn').classList.add('hidden');
         }
     }
 
@@ -728,10 +711,10 @@
         const classes = event.target.classList;
         if (config.clickableEmotes && classes.contains('emote')) {
             event.preventDefault();
-            const whichMouseButton = event.which; // 1=left click, 2=middle click
-            if(whichMouseButton === LEFT_CLICK || whichMouseButton === MIDDLE_CLICK) {
+            const mouseButton = event.button;
+            if(mouseButton === LEFT_CLICK || mouseButton === MIDDLE_CLICK) {
                 const emote = classes.toString().replace('emote', '').trim();
-                const autoSendMessage = whichMouseButton === MIDDLE_CLICK;
+                const autoSendMessage = mouseButton === MIDDLE_CLICK;
                 addToChatBox(emote, autoSendMessage);
             }
         }
@@ -776,15 +759,16 @@
         config.convertEmbedLinks = value;
 
         if (valueChanged) {
-            $('#chat-win-main .chat-lines')
-                .find('a.externallink.bookmarklink')
-                .each(function (i, link) {
-                    if (config.convertEmbedLinks) {
-                        convertEmbedLinkToExternalLink(link);
-                    } else {
-                        unconvertEmbedLinkToExternalLink(link);
-                    }
-                });
+            const links = document
+                .querySelector('#chat-win-main .chat-lines')
+                .querySelectorAll('a.externallink.bookmarklink');
+            for (const link of links) {
+                if (config.convertEmbedLinks) {
+                    convertEmbedLinkToExternalLink(link);
+                } else {
+                    unconvertEmbedLinkToExternalLink(link);
+                }
+            }
         }
 
         saveConfig();
@@ -802,13 +786,13 @@
         }
 
         if (chatHidden) {
-            $('#chat-output-frame').css('visibility', 'hidden');
-            $('#chat-hide-btn > span').text('o');
-            $('#chat-hide-btn').attr('title', 'Show chat');
+            document.getElementById('chat-output-frame').style.visibility = 'hidden';
+            document.getElementById('chat-hide-btn').querySelector('span').innerText = 'o';
+            document.getElementById('chat-hide-btn').setAttribute('title', 'Show chat');
         } else {
-            $('#chat-output-frame').css('visibility', 'unset');
-            $('#chat-hide-btn > span').text('ø');
-            $('#chat-hide-btn').attr('title', 'Hide chat');
+            document.getElementById('chat-output-frame').style.visibility = 'unset';
+            document.getElementById('chat-hide-btn').querySelector('span').innerText = 'ø';
+            document.getElementById('chat-hide-btn').setAttribute('title', 'Hide chat');
         }
     }
 
@@ -860,7 +844,7 @@
     /******************************************/
 
     function baseInjections() {
-        $('#chat-output-frame').on('mousedown', emoteClick);
+        document.getElementById('chat-output-frame').addEventListener('mousedown', emoteClick);
     }
 
     function injectToolbarButtons() {
@@ -887,33 +871,14 @@
 			.emote-scaling-wrapper {
 				transform: scale(0.8, 0.8);
 				white-space: nowrap;
-			}`;/*
-			.chat-menu {
-				display: block;
-				opacity: 0;
-				transition-duration: 200ms;
-				transition-property: transform, opacity;
-				pointer-events: none;
 			}
-			.chat-menu.right {
-				transform: translateX(200px);
-			}
-			.chat-menu.left {
-				transform: translateX(-200px);
-			}
-			.chat-menu.active {
-				transform: translateX(0);
-				opacity: 1;
-				transition-duration: 100ms;
-				transition-property: transform, opacity;
-				pointer-events: unset;
-            }*/ css += `
             .hidden {
                 display: none !important;
             }
 			#chat-tools-wrap .chat-tool-btn {
 				width: unset;
 				min-width: 2.25em;
+                cursor: pointer;
             }
             #chat-tools-wrap .voiture-btn-icon {
                 float: left;
@@ -989,7 +954,7 @@
         // Mentions
         htmlRight += `
         <a id="chat-mentions-btn" class="chat-tool-btn voiture-chat-tool-btn" title="Open mentions window" target="_blank" rel="noreferrer noopener" href="https://polecat.me/mentions">
-            <span class="voiture-btn-icon">@</span>
+            <span class="voiture-btn-icon" style="pointer-events: none;">@</span>
         </a>`;
 
         // Hide Chat
@@ -1006,28 +971,22 @@
 
         css += '</style>';
 
-        //$('#chat-tools-wrap > .chat-tools-group:first-child').append(htmlLeft);
         document.querySelector('#chat-tools-wrap > .chat-tools-group:first-child').insertAdjacentHTML('beforeend', htmlLeft);
-
-        //$('#chat-tools-wrap > .chat-tools-group:last-child').prepend(htmlRight);
-        //$('head').append(css);
+        document.querySelector('#chat-tools-wrap > .chat-tools-group:last-child').insertAdjacentHTML('afterbegin', htmlRight);
         document.head.insertAdjacentHTML('beforeend', css);
 
         // add event listeners
-        $('#chat-nathanTiny2-btn').click((e) => sendChatMessage(getEmoteAlignedMessage('nathanTiny2_OG')));
-        $('#chat-👞👞-btn').click((e) => sendChatMessage(getEmoteAlignedMessage('👞👞')));
-        $('#chat-gobl-btn').on('mouseup', (e) => {
-            if(e.which === LEFT_CLICK || e.which === MIDDLE_CLICK)
+        document.getElementById('chat-nathanTiny2-btn').addEventListener('click', e => sendChatMessage(getEmoteAlignedMessage('nathanTiny2_OG')));
+        document.getElementById('chat-👞👞-btn').addEventListener('click', e => sendChatMessage(getEmoteAlignedMessage('👞👞')));
+        document.getElementById('chat-gobl-btn').addEventListener('mouseup', e => {
+            if (e.button === LEFT_CLICK || e.button === MIDDLE_CLICK)
             {
-                const autoSend = (e.which === MIDDLE_CLICK);
+                const autoSend = (e.button === MIDDLE_CLICK);
                 addToChatBox(generateGoblMessage(), autoSend);
             }
         });
-        $('#chat-emote-back-btn').on('wheel', (e) => scrollEmoteMentions(-1*Math.sign(e.originalEvent.deltaY)));
-        $('#chat-emote-back-btn').on('mouseup', (e) => {
-            if (e.which === MIDDLE_CLICK) clearEmoteBackButton();
-        });
-        $('#chat-mentions-btn').click((e) => {
+        addEmoteBackListeners();
+        document.getElementById('chat-mentions-btn').addEventListener('click', e => {
             e.preventDefault();
             if (mentionsWindow === null || mentionsWindow.closed) {
                 mentionsWindow = window.open(
@@ -1038,9 +997,19 @@
             }
             mentionsWindow.focus();
         });
-        $('#chat-hide-btn').click((e) => {
+        document.getElementById('chat-hide-btn').addEventListener('click', e => {
             e.preventDefault();
             toggleHideChat();
+        });
+    }
+
+    function addEmoteBackListeners() {
+        document.getElementById('chat-emote-back-btn').addEventListener('wheel', e => {
+            scrollEmoteMentions(-1 * Math.sign(e.deltaY));
+        });
+        document.getElementById('chat-emote-back-btn').addEventListener('mouseup', e => {
+            if (e.button === MIDDLE_CLICK)
+                clearEmoteBackButton();
         });
     }
 
@@ -1126,33 +1095,21 @@
 
         css += '</style>';
 
-        $('#chat-settings-form').append(html);
-        $('head').append(css);
+        document.getElementById('chat-settings-form').insertAdjacentHTML('beforeend', html);
+        document.head.insertAdjacentHTML('beforeend', css);
 
         // add event listeners
-        $('#voiture-options-theme').change((e) =>
-            changeTheme(e.target.value),
-        );
-        $('#voiture-options-auto-message').change((e) =>
-            toggleAutoSendMessages(e.target.checked),
-        );
-        $('#voiture-options-emote-click').change((e) =>
-            toggleEmoteClicks(e.target.checked),
-        );
-        $('#voiture-options-convert-embed-links').change((e) =>
-            toggleConvertEmbedLinks(e.target.checked),
-        );
-        $('#voiture-options-show-vertical-combo-buttons').change((e) =>
-            showVerticalComboButtons(e.target.checked),
-        );
-        $('#voiture-options-starting-left-calculate').click(
-            saveMessageStartingLeft,
-        );
+        document.getElementById('voiture-options-theme').addEventListener('change', e => changeTheme(e.target.value));
+        document.getElementById('voiture-options-auto-message').addEventListener('change', e => toggleAutoSendMessages(e.target.checked));
+        document.getElementById('voiture-options-emote-click').addEventListener('change', e => toggleEmoteClicks(e.target.checked));
+        document.getElementById('voiture-options-convert-embed-links').addEventListener('change', e => toggleConvertEmbedLinks(e.target.checked));
+        document.getElementById('voiture-options-show-vertical-combo-buttons').addEventListener('change', e => showVerticalComboButtons(e.target.checked));
+        document.getElementById('voiture-options-starting-left-calculate').addEventListener('click', saveMessageStartingLeft);
     }
 
     function saveMessageStartingLeft() {
         config.messageStartingLeft = getOwnStartingLeft(config.username);
-        $('#voiture-options-starting-left').val(config.messageStartingLeft);
+        document.getElementById('voiture-options-starting-left').value = config.messageStartingLeft;
         saveConfig();
     }
 
@@ -1169,8 +1126,8 @@
         // Need to wait for it to load... sigh
         setTimeout(() => {
             // Get username (current gets it from chatbox placeholder, hopefully there is a better way to do this)
-            const username = $('#chat-input-control')
-                .attr('placeholder')
+            const username = document.getElementById('chat-input-control')
+                .getAttribute('placeholder')
                 .replace('Write something ', '')
                 .replace('...', '')
                 .trim();
@@ -1190,19 +1147,6 @@
     /* Main Code To Run ***********************/
     /******************************************/
 
-    function fixUserListSearchAutofocus() {
-        // Disable user search
-        $('#chat-user-list-search > input').prop('disabled', true);
-        // Re-enable and focus search on click
-        $('#chat-user-list-search').on('click', function (e) {
-            $(this).find('input').prop('disabled', false).focus();
-        });
-        // Re-disable user search on blur
-        $('#chat-user-list-search > input').on('blur', function (e) {
-            $(this).prop('disabled', true);
-        });
-    }
-
     function main() {
         loadConfig();
 
@@ -1211,9 +1155,6 @@
         injectOptions();
         observeChat();
         addLightThemeStyle();
-
-        // Disable autofocus of user list search (otherwise chat goes off screen when user list is open)
-        //fixUserListSearchAutofocus();
     }
 
     main();
