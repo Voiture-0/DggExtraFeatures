@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         D.GG Extra Features
 // @namespace    http://tampermonkey.net/
-// @version      2.1.1
+// @version      2.1.2
+// @updateURL    https://raw.githubusercontent.com/Voiture-0/DggExtraFeatures/master/Dgg-Extra-Features.js
+// @downloadURL  https://raw.githubusercontent.com/Voiture-0/DggExtraFeatures/master/Dgg-Extra-Features.js
 // @description  Adds features to the destiny.gg chat
 // @author       Voiture
-// @include      /https:\/\/www\.destiny\.gg\/embed\/chat.*/
-// @include      /https:\/\/www\.destiny\.gg\/bigscreen.*/
+// @match        /https:\/\/www\.destiny\.gg\/embed\/chat.*/
+// @match        /https:\/\/www\.destiny\.gg\/bigscreen.*/
 // @grant        none
-// @update       https://raw.githubusercontent.com/Voiture-0/DggExtraFeatures/master/Dgg-Extra-Features.js
 // ==/UserScript==
 
 (() => {
@@ -450,7 +451,7 @@
         const btn = oldBtn.cloneNode(true); // Easiest way to remove old event listener
         btn.setAttribute('title', '');
         oldBtn.parentNode.replaceChild(btn, oldBtn);
-        
+
         // Remove classes to hide it
         var emoteBackBtnEmote = btn.querySelector('.emote.voiture-btn-icon');
         emoteBackBtnEmote.className = 'emote voiture-btn-icon';
