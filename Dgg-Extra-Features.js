@@ -7,8 +7,8 @@
 // @downloadURL  https://raw.githubusercontent.com/Voiture-0/DggExtraFeatures/master/Dgg-Extra-Features.js
 // @description  Adds features to the destiny.gg chat
 // @author       Voiture
-// @match        /https:\/\/www\.destiny\.gg\/embed\/chat.*/
-// @match        /https:\/\/www\.destiny\.gg\/bigscreen.*/
+// @include      /https:\/\/www\.destiny\.gg\/embed\/chat.*/
+// @include      /https:\/\/www\.destiny\.gg\/bigscreen.*/
 // @grant        none
 // ==/UserScript==
 
