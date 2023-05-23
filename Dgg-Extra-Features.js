@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         D.GG Extra Features (Voiture)
 // @namespace    http://tampermonkey.net/
-// @version      2.1.4
+// @version      2.1.5
 // @update       https://raw.githubusercontent.com/Voiture-0/DggExtraFeatures/master/Dgg-Extra-Features.js
 // @updateURL    https://raw.githubusercontent.com/Voiture-0/DggExtraFeatures/master/Dgg-Extra-Features.js
 // @downloadURL  https://raw.githubusercontent.com/Voiture-0/DggExtraFeatures/master/Dgg-Extra-Features.js
@@ -613,7 +613,7 @@
 
     function getOwnStartingLeft(username) {
         const exampleMessageSelector = `div.msg-chat.msg-user.msg-own:not(.msg-continue)[data-username='${username.toLowerCase()}'] > span.text`;
-        let exampleMessage = exampleMessageSelector;
+        let exampleMessage = document.querySelector(exampleMessageSelector);
         if (exampleMessage == null) {
             // If there is no message to measure, send a message to measure
             // Send message
@@ -624,7 +624,7 @@
             }
 
             // Get example message
-            exampleMessage = exampleMessageSelector;
+            exampleMessage = document.querySelector(exampleMessageSelector);
 
             if (exampleMessage == null) {
                 const error = 'Unable to measure, please tell Voiture about this';
