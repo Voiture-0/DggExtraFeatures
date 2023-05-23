@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         D.GG Extra Features
 // @namespace    http://tampermonkey.net/
-// @version      2.1.0
+// @version      2.1.1
 // @description  Adds features to the destiny.gg chat
 // @author       Voiture
 // @include      /https:\/\/www\.destiny\.gg\/embed\/chat.*/
@@ -869,7 +869,7 @@
 				margin-right: 0.6em;
 			}
 			.emote-scaling-wrapper {
-				transform: scale(0.8, 0.8);
+				transform: scale(0.7);
 				white-space: nowrap;
 			}
             .hidden {
@@ -895,12 +895,19 @@
                 opacity: 0.25;
                 transition: opacity 150ms;
                 color: white;
+                min-width: unset;
+            }
+            #chat-tools-wrap > .chat-tools-group:first-child .voiture-chat-tool-btn {
+                border-left: unset;
+                border-right: unset;
             }
             #chat-tools-wrap .voiture-chat-tool-btn:hover {
                 opacity: 1;
             }
             #chat-tools-wrap #chat-👞👞-btn > i.voiture-btn-icon {
                 font-weight: normal;
+                font-size: 80%;
+                margin-top: 7px;
             }
             .msg-chat .chat-user {
                 background: rgba(255,255,255,0.08);
@@ -954,7 +961,7 @@
         // Mentions
         htmlRight += `
         <a id="chat-mentions-btn" class="chat-tool-btn voiture-chat-tool-btn" title="Open mentions window" target="_blank" rel="noreferrer noopener" href="https://polecat.me/mentions">
-            <span class="voiture-btn-icon" style="pointer-events: none;">@</span>
+            <span class="voiture-btn-icon" style="pointer-events: none;margin-top: 1px;">@</span>
         </a>`;
 
         // Hide Chat
