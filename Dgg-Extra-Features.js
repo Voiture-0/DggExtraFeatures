@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         D.GG Extra Features (Voiture)
 // @namespace    http://tampermonkey.net/
-// @version      2.2.0
+// @version      2.2.1
 // @update       https://raw.githubusercontent.com/Voiture-0/DggExtraFeatures/master/Dgg-Extra-Features.js
 // @updateURL    https://raw.githubusercontent.com/Voiture-0/DggExtraFeatures/master/Dgg-Extra-Features.js
 // @downloadURL  https://raw.githubusercontent.com/Voiture-0/DggExtraFeatures/master/Dgg-Extra-Features.js
@@ -651,6 +651,9 @@
                 font-weight: normal;
                 font-size: 80%;
                 margin-top: 7px;
+            }
+            #chat-emote-back-btn {
+                min-width: 20px !important;
             }
             .msg-chat .chat-user {
                 background: rgba(255,255,255,0.08);
