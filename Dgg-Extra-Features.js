@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         D.GG Extra Features (Voiture)
 // @namespace    http://tampermonkey.net/
-// @version      2.2.1
+// @version      2.3.0
 // @update       https://raw.githubusercontent.com/Voiture-0/DggExtraFeatures/master/Dgg-Extra-Features.js
 // @updateURL    https://raw.githubusercontent.com/Voiture-0/DggExtraFeatures/master/Dgg-Extra-Features.js
 // @downloadURL  https://raw.githubusercontent.com/Voiture-0/DggExtraFeatures/master/Dgg-Extra-Features.js
@@ -77,6 +77,9 @@
         },
         '#twitch-clip': {
             convertedLink: 'https://clips.twitch.tv/'
+        },
+        '#rumble': {
+            convertedLink: 'https://rumble.com/'
         }
     };
 
